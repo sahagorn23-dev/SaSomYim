@@ -18,7 +18,7 @@ export async function GET() {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("promotions")
-    .select("id, title, description, points_cost, image_url, is_active")
+    .select("id, title, description, points_cost, image_url, quantity_available, is_active")
     .eq("is_active", true)
     .limit(10);
 

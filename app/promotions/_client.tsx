@@ -15,6 +15,7 @@ type Promotion = {
   description: string | null;
   points_cost: number;
   image_url: string | null;
+  quantity_available: number;
   is_active: boolean;
 };
 
