@@ -39,8 +39,12 @@ function CouponsContent() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/members/redemptions", {
-        headers: { Authorization: `Bearer ${idToken}` },
+      const res = await fetch(`/api/members/redemptions?t=${Date.now()}`, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+        },
         cache: "no-store",
       });
 

@@ -43,12 +43,23 @@ function PromotionsContent() {
     setLoading(true);
 
     try {
+      const cacheBuster = Date.now();
       const [historyRes, promoRes] = await Promise.all([
-        fetch("/api/points/history", {
-          headers: { Authorization: `Bearer ${idToken}` },
+        fetch(`/api/points/history?t=${cacheBuster}`, {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
           cache: "no-store",
         }),
-        fetch("/api/promotions", { cache: "no-store" }),
+        fetch(`/api/promotions?t=${cacheBuster}`, {
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+          cache: "no-store",
+        }),
       ]);
 
       if (historyRes.status === 404) {

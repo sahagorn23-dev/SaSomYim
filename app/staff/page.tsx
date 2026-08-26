@@ -1,12 +1,15 @@
 import { verifyStaffSession } from "@/lib/staff-auth";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
-const StaffLoginClient = dynamic(
+// Prevent Vercel from caching this page — it reads cookies at request time
+export const dynamic = "force-dynamic";
+
+const StaffLoginClient = nextDynamic(
   () => import("./_components/StaffLoginClient").then((mod) => mod.StaffLoginClient),
   { ssr: false }
 );
 
-const StaffDashboardClient = dynamic(
+const StaffDashboardClient = nextDynamic(
   () => import("./_components/StaffDashboardClient").then((mod) => mod.StaffDashboardClient),
   { ssr: false }
 );

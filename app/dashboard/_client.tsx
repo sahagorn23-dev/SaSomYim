@@ -40,8 +40,12 @@ function DashboardContent() {
       setLoadingHistory(true);
     }
     try {
-      const res = await fetch("/api/points/history", {
-        headers: { Authorization: `Bearer ${idToken}` },
+      const res = await fetch(`/api/points/history?t=${Date.now()}`, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+        },
         cache: "no-store",
       });
       
@@ -84,8 +88,12 @@ function DashboardContent() {
     if (!idToken) return;
     try {
       setQrLoading(true);
-      const res = await fetch("/api/checkin/token", {
-        headers: { Authorization: `Bearer ${idToken}` },
+      const res = await fetch(`/api/checkin/token?t=${Date.now()}`, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+        },
         cache: "no-store",
       });
       if (res.ok) {

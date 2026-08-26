@@ -12,8 +12,12 @@ function RootRoutingContent() {
   useEffect(() => {
     if (!idToken) return;
 
-    fetch("/api/members/me", {
-      headers: { Authorization: `Bearer ${idToken}` },
+    fetch(`/api/members/me?t=${Date.now()}`, {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
     })
       .then(async (res) => {
         if (!res.ok) {
