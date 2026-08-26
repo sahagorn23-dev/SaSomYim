@@ -166,7 +166,7 @@ export function AdminDashboardClient() {
       <main className="flex-1 p-5 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left Col: Create Form */}
-        <div className="lg:col-span-4 bg-card rounded-[24px] shadow-sm p-6 sticky top-24">
+        <div className="lg:col-span-4 bg-card rounded-[24px] shadow-sm p-6 lg:sticky lg:top-24">
           <h2 className="font-kanit font-bold text-lg text-ink mb-6 flex items-center gap-2">
             <PlusCircle size={20} className="text-espresso" />
             สร้างโปรโมชั่นใหม่
