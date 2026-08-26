@@ -38,22 +38,66 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "ไม่พบข้อมูลสมาชิก" }, { status: 404, headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } });
   }
 
-  // 2. ดึงประวัติ point_transactions (ใช้ตารางที่พนักงานสร้างขึ้นมา)
-  const { data: transactions, error: txError } = await supabase
+  // 2. ดึงประวัติจาก point_transactions (ตารางหลัก — Staff earn/redeem + redeem_promotion)
+  const { data: ptTransactions, error: ptError } = await supabase
     .from("point_transactions")
     .select("id, type, amount, created_at")
     .eq("member_id", member.id)
     .order("created_at", { ascending: false });
 
-  if (txError) {
-    console.error("[points/history] Error fetching transactions:", txError);
-    return NextResponse.json({ error: "เกิดข้อผิดพลาดในการดึงประวัติ" }, { status: 500, headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } });
+  if (ptError) {
+    console.error("[points/history] Error fetching point_transactions:", ptError);
   }
+
+  // 3. ดึงประวัติจาก points_transactions (ตารางเสริม — อาจมี records เก่าหรือจาก RPC เวอร์ชันเก่า)
+  const { data: psTransactions, error: psError } = await supabase
+    .from("points_transactions")
+    .select("id, type, points_change, reason, created_at")
+    .eq("member_id", member.id)
+    .order("created_at", { ascending: false });
+
+  if (psError) {
+    console.error("[points/history] Error fetching points_transactions:", psError);
+  }
+
+  // 4. Normalize ทั้ง 2 ตารางให้เป็น format เดียวกัน
+  type Transaction = {
+    id: string;
+    type: "earn" | "redeem";
+    amount: number;
+    created_at: string;
+  };
+
+  const normalizedPt: Transaction[] = (ptTransactions || []).map((tx) => ({
+    id: tx.id,
+    type: tx.type as "earn" | "redeem",
+    amount: tx.amount,
+    created_at: tx.created_at,
+  }));
+
+  // points_transactions ใช้ points_change (บวก = earn, ลบ = redeem)
+  const normalizedPs: Transaction[] = (psTransactions || []).map((tx) => ({
+    id: tx.id,
+    type: tx.points_change > 0 ? "earn" as const : "redeem" as const,
+    amount: Math.abs(tx.points_change),
+    created_at: tx.created_at,
+  }));
+
+  // 5. รวม + deduplicate (ตัด record ซ้ำที่อาจมี id เดียวกัน) + เรียงตามเวลา
+  const mergedMap = new Map<string, Transaction>();
+  for (const tx of [...normalizedPt, ...normalizedPs]) {
+    if (!mergedMap.has(tx.id)) {
+      mergedMap.set(tx.id, tx);
+    }
+  }
+
+  const allTransactions = Array.from(mergedMap.values())
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   return NextResponse.json(
     {
       points_balance: member.points_balance,
-      transactions: transactions || [],
+      transactions: allTransactions,
     },
     { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
   );
